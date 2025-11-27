@@ -4,7 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Preloader</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #111;
+            overflow: hidden;
+        }
+
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            flex-direction: column; /* Stack ball and text vertically */
+            justify-content: center; /* Center vertically */
+            align-items: center;     /* Center horizontally */
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        model-viewer {
+            flex-shrink: 0;
+            margin-bottom: 2rem; /* Add space between the ball and the text */
+        }
+
+        .main-content {
+            display: none;
+            color: white;
+            padding: 2em;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .text-container {
+            color: white;
+            font-size: 60px;
+            font-weight: bold;
+            text-align: center;
+            max-width: 90%;
+            line-height: 1.4;
+        }
+
+        .text-container span {
+            opacity: 0;
+            display: inline-block;
+            animation: fadeInFromSide 0.8s forwards;
+        }
+
+        @keyframes fadeInFromSide {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="preloader">
@@ -29,6 +92,46 @@
 
     <!-- Load the model-viewer library -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        window.addEventListener('load', () => {
+            const preloader = document.querySelector('.preloader');
+            const mainContent = document.querySelector('.main-content');
+            const textContainer = document.querySelector('.text-container');
+            
+            const text = "Il calcio amatoriale vale più di quanto pensi";
+
+            const words = text.split(' ');
+            const initialDelay = 1; // Seconds to wait before text animation starts
+            const wordAnimationDelay = 0.2; // Seconds between each word appearing
+            const postAnimationHold = 2.5; // Seconds to hold after the last word appears
+
+            // Clear any previous content
+            textContainer.innerHTML = '';
+
+            words.forEach((word, index) => {
+                const span = document.createElement('span');
+                span.textContent = word;
+                span.style.animationDelay = `${initialDelay + (index * wordAnimationDelay)}s`;
+                textContainer.appendChild(span);
+                // Add a space after each word
+                textContainer.append(' ');
+            });
+
+            const totalAnimationTime = initialDelay + (words.length * wordAnimationDelay) + postAnimationHold;
+
+            // Set a timeout to fade out the preloader
+            setTimeout(() => {
+                preloader.style.opacity = '0';
+                
+                // Listen for the transition to end before hiding the preloader and showing content
+                preloader.addEventListener('transitionend', () => {
+                    preloader.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    document.body.style.overflow = 'auto';
+                }, { once: true }); // Ensure the event listener only runs once
+
+            }, totalAnimationTime * 1000);
+        });
+    </script>
 </body>
 </html>
